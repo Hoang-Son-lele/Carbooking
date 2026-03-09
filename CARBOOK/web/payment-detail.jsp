@@ -39,8 +39,14 @@
                     <div class="card mb-3">
                         <div class="card-header d-flex justify-content-between">
                             <h5>Mã thanh toán: ${payment.transactionId}</h5>
-                            <span class="badge badge-${payment.status == 'Completed' ? 'success' : payment.status == 'Pending' ? 'warning' : payment.status == 'Failed' ? 'danger' : 'secondary'} badge-lg">
-                                ${payment.status}
+                            <span class="badge badge-${payment.status == 'Paid' ? 'success' : payment.status == 'Pending' ? 'warning' : payment.status == 'Failed' ? 'danger' : 'secondary'} badge-lg">
+                                <c:choose>
+                                    <c:when test="${payment.status == 'Paid'}">Đã thanh toán</c:when>
+                                    <c:when test="${payment.status == 'Pending'}">Chờ xử lý</c:when>
+                                    <c:when test="${payment.status == 'Failed'}">Thất bại</c:when>
+                                    <c:when test="${payment.status == 'Refunded'}">Đã hoàn tiền</c:when>
+                                    <c:otherwise>${payment.status}</c:otherwise>
+                                </c:choose>
                             </span>
                         </div>
                         <div class="card-body">

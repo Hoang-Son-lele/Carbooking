@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -102,15 +103,51 @@ public class BookingServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Booking> bookings;
         
+        // Get filter parameter
+        String statusFilter = request.getParameter("status");
+        
+        System.out.println("=== Booking Filter Debug ===");
+        System.out.println("Status filter: " + statusFilter);
+        System.out.println("User Role: " + user.getRoleId());
+        
+        // Load bookings based on role
         if (user.getRoleId() == 1) { // Admin
             bookings = bookingDAO.getAllBookings();
         } else if (user.getRoleId() == 2) { // CarOwner
             // Get bookings for cars owned by this user
             List<Car> ownerCars = carDAO.getCarsByOwnerId(user.getUserId());
-            bookings = bookingDAO.getAllBookings(); // Filter in JSP or create specific method
+            bookings = new ArrayList<>();
+            for (Car car : ownerCars) {
+                List<Booking> carBookings = bookingDAO.getBookingsByCarId(car.getCarId());
+                if (carBookings != null) {
+                    bookings.addAll(carBookings);
+                }
+            }
         } else { // Customer
             bookings = bookingDAO.getBookingsByCustomerId(user.getUserId());
         }
+        
+        System.out.println("Total bookings before filter: " + (bookings != null ? bookings.size() : 0));
+        
+        // Apply status filter if provided
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && bookings != null && !bookings.isEmpty()) {
+            List<Booking> filteredBookings = new ArrayList<>();
+            
+            for (Booking booking : bookings) {
+                if (statusFilter.equals(booking.getStatus())) {
+                    filteredBookings.add(booking);
+                    System.out.println("Booking " + booking.getBookingId() + 
+                                     " status: " + booking.getStatus() + " - MATCHES");
+                } else {
+                    System.out.println("Booking " + booking.getBookingId() + 
+                                     " status: " + booking.getStatus() + " - NO MATCH");
+                }
+            }
+            
+            bookings = filteredBookings;
+            System.out.println("Total bookings after filter: " + bookings.size());
+        }
+        System.out.println("=== End Booking Filter Debug ===");
         
         request.setAttribute("bookings", bookings);
         request.getRequestDispatcher("bookings.jsp").forward(request, response);

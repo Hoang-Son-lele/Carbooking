@@ -12,6 +12,7 @@ import model.User;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -100,36 +101,77 @@ public class CarManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Car> cars;
         
+        // Get filter parameters
+        String search = request.getParameter("search");
+        String categoryIdStr = request.getParameter("categoryId");
+        String statusFilter = request.getParameter("status");
+        
+        System.out.println("=== Car Filter Debug ===");
+        System.out.println("Search: " + search);
+        System.out.println("Category ID: " + categoryIdStr);
+        System.out.println("Status: " + statusFilter);
+        System.out.println("User Role: " + user.getRoleId());
+        
         // Admin sees all cars, CarOwner sees only their cars
         if (user.getRoleId() == 1) { // Admin
             cars = carDAO.getAllCars();
-           // System.out.println("Admin - Loading all cars: " + (cars != null ? cars.size() : "null"));
         } else if (user.getRoleId() == 2) { // CarOwner
             cars = carDAO.getCarsByOwnerId(user.getUserId());
-            // System.out.println("CarOwner - Loading cars for userId " + user.getUserId() + ": " + (cars != null ? cars.size() : "null"));
         } else {
             cars = carDAO.getAvailableCars();
-            // System.out.println("Customer - Loading available cars: " + (cars != null ? cars.size() : "null"));
         }
+        
+        System.out.println("Total cars before filter: " + (cars != null ? cars.size() : 0));
+        
+        // Apply filters
+        if (cars != null && !cars.isEmpty()) {
+            List<Car> filteredCars = new ArrayList<>();
+            
+            for (Car car : cars) {
+                boolean matchesSearch = true;
+                boolean matchesCategory = true;
+                boolean matchesStatus = true;
+                
+                // Search filter (license plate or description)
+                if (search != null && !search.trim().isEmpty()) {
+                    String searchLower = search.toLowerCase();
+                    matchesSearch = (car.getLicensePlate() != null && car.getLicensePlate().toLowerCase().contains(searchLower)) ||
+                                  (car.getDescription() != null && car.getDescription().toLowerCase().contains(searchLower));
+                }
+                
+                // Category filter
+                if (categoryIdStr != null && !categoryIdStr.trim().isEmpty()) {
+                    try {
+                        int categoryId = Integer.parseInt(categoryIdStr);
+                        matchesCategory = (car.getCategoryId() == categoryId);
+                        System.out.println("Car " + car.getCarId() + " categoryId: " + car.getCategoryId() + 
+                                         ", filter: " + categoryId + ", matches: " + matchesCategory);
+                    } catch (NumberFormatException e) {
+                        // Invalid category ID, ignore filter
+                    }
+                }
+                
+                // Status filter
+                if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                    matchesStatus = statusFilter.equals(car.getStatus());
+                    System.out.println("Car " + car.getCarId() + " status: " + car.getStatus() + 
+                                     ", filter: " + statusFilter + ", matches: " + matchesStatus);
+                }
+                
+                // Add car if it matches all filters
+                if (matchesSearch && matchesCategory && matchesStatus) {
+                    filteredCars.add(car);
+                }
+            }
+            
+            cars = filteredCars;
+            System.out.println("Total cars after filter: " + cars.size());
+        }
+        System.out.println("=== End Car Filter Debug ===");
         
         // Load brands and categories for filters and form
         List<CarBrand> brands = brandDAO.getAllBrands();
         List<CarCategory> categories = categoryDAO.getAllCategories();
-        
-        //System.out.println("Brands loaded: " + (brands != null ? brands.size() : "null"));
-        //System.out.println("Categories loaded: " + (categories != null ? categories.size() : "null"));
-        
-        // Detailed logging of cars
-        // if (cars != null) {
-        //     System.out.println("=== Cars Details ===");
-        //     for (Car car : cars) {
-        //         System.out.println("Car ID: " + car.getCarId() + 
-        //                          ", License: " + car.getLicensePlate() + 
-        //                          ", Model ID: " + car.getModelId() + 
-        //                          ", Status: " + car.getStatus());
-        //     }
-        //     System.out.println("===================");
-        // }
         
         request.setAttribute("cars", cars);
         request.setAttribute("brands", brands);

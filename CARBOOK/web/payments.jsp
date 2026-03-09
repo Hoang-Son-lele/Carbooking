@@ -36,7 +36,7 @@
                             <select name="status" class="form-control">
                                 <option value="">Tất cả</option>
                                 <option value="Pending" ${param.status == 'Pending' ? 'selected' : ''}>Chờ xử lý</option>
-                                <option value="Completed" ${param.status == 'Completed' ? 'selected' : ''}>Hoàn thành</option>
+                                <option value="Paid" ${param.status == 'Paid' ? 'selected' : ''}>Đã thanh toán</option>
                                 <option value="Failed" ${param.status == 'Failed' ? 'selected' : ''}>Thất bại</option>
                                 <option value="Refunded" ${param.status == 'Refunded' ? 'selected' : ''}>Đã hoàn tiền</option>
                             </select>
@@ -94,8 +94,14 @@
                                                 <td><fmt:formatDate value="${payment.paymentDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                                                 <td><fmt:formatNumber value="${payment.amount}" type="currency" currencySymbol="₫"/></td>
                                                 <td>
-                                                    <span class="badge badge-${payment.status == 'Completed' ? 'success' : payment.status == 'Pending' ? 'warning' : payment.status == 'Failed' ? 'danger' : 'info'}">
-                                                        ${payment.status}
+                                                    <span class="badge badge-${payment.status == 'Paid' ? 'success' : payment.status == 'Pending' ? 'warning' : payment.status == 'Failed' ? 'danger' : 'info'}">
+                                                        <c:choose>
+                                                            <c:when test="${payment.status == 'Paid'}">Đã thanh toán</c:when>
+                                                            <c:when test="${payment.status == 'Pending'}">Chờ xử lý</c:when>
+                                                            <c:when test="${payment.status == 'Failed'}">Thất bại</c:when>
+                                                            <c:when test="${payment.status == 'Refunded'}">Đã hoàn tiền</c:when>
+                                                            <c:otherwise>${payment.status}</c:otherwise>
+                                                        </c:choose>
                                                     </span>
                                                 </td>
                                                 <td>

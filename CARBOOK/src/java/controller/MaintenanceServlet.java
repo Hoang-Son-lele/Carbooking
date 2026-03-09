@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -98,6 +99,12 @@ public class MaintenanceServlet extends HttpServlet {
         String carIdParam = request.getParameter("carId");
         String statusFilter = request.getParameter("status");
         
+        System.out.println("=== Maintenance Filter Debug ===");
+        System.out.println("Car ID: " + carIdParam);
+        System.out.println("Status filter: " + statusFilter);
+        System.out.println("User Role: " + user.getRoleId());
+        
+        // First, load data based on role and carId (if provided)
         if (carIdParam != null && !carIdParam.isEmpty()) {
             // List for specific car
             int carId = Integer.parseInt(carIdParam);
@@ -112,16 +119,13 @@ public class MaintenanceServlet extends HttpServlet {
             
             maintenanceList = maintenanceDAO.getMaintenanceByCarId(carId);
             request.setAttribute("car", car);
-        } else if (statusFilter != null && !statusFilter.isEmpty()) {
-            // Filter by status
-            maintenanceList = maintenanceDAO.getMaintenanceByStatus(statusFilter);
         } else if (user.getRoleId() == 1) {
             // Admin sees all
             maintenanceList = maintenanceDAO.getAllMaintenanceRecords();
         } else if (user.getRoleId() == 2) {
             // Car owner sees only their cars' maintenance
             List<Car> userCars = carDAO.getCarsByOwnerId(user.getUserId());
-            maintenanceList = new java.util.ArrayList<>();
+            maintenanceList = new ArrayList<>();
             for (Car car : userCars) {
                 maintenanceList.addAll(maintenanceDAO.getMaintenanceByCarId(car.getCarId()));
             }
@@ -131,6 +135,28 @@ public class MaintenanceServlet extends HttpServlet {
             response.sendRedirect("dashboard");
             return;
         }
+        
+        System.out.println("Total maintenance records before filter: " + (maintenanceList != null ? maintenanceList.size() : 0));
+        
+        // Apply status filter if provided
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && maintenanceList != null && !maintenanceList.isEmpty()) {
+            List<MaintenanceRecord> filteredList = new ArrayList<>();
+            
+            for (MaintenanceRecord maintenance : maintenanceList) {
+                if (statusFilter.equals(maintenance.getStatus())) {
+                    filteredList.add(maintenance);
+                    System.out.println("Maintenance " + maintenance.getMaintenanceId() + 
+                                     " status: " + maintenance.getStatus() + " - MATCHES");
+                } else {
+                    System.out.println("Maintenance " + maintenance.getMaintenanceId() + 
+                                     " status: " + maintenance.getStatus() + " - NO MATCH");
+                }
+            }
+            
+            maintenanceList = filteredList;
+            System.out.println("Total maintenance records after filter: " + maintenanceList.size());
+        }
+        System.out.println("=== End Maintenance Filter Debug ===");
         
         request.setAttribute("maintenanceList", maintenanceList);
         request.getRequestDispatcher("maintenance-records.jsp").forward(request, response);

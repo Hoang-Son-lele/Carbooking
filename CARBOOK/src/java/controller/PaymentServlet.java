@@ -11,6 +11,8 @@ import model.Invoice;
 import model.User;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -90,13 +92,87 @@ public class PaymentServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Payment> payments;
         
+        // Get filter parameters
+        String statusFilter = request.getParameter("status");
+        String fromDateStr = request.getParameter("fromDate");
+        String toDateStr = request.getParameter("toDate");
+        
+        System.out.println("=== Payment Filter Debug ===");
+        System.out.println("Status filter: " + statusFilter);
+        System.out.println("From date: " + fromDateStr);
+        System.out.println("To date: " + toDateStr);
+        
         if (user.getRoleId() == 1) { // Admin
             payments = paymentDAO.getAllPayments();
         } else {
             // Get payments for user's bookings
             List<Booking> bookings = bookingDAO.getBookingsByCustomerId(user.getUserId());
-            payments = paymentDAO.getAllPayments(); // Filter in JSP or create specific method
+            payments = new ArrayList<>();
+            for (Booking booking : bookings) {
+                payments.addAll(paymentDAO.getPaymentsByBookingId(booking.getBookingId()));
+            }
         }
+        
+        System.out.println("Total payments before filter: " + (payments != null ? payments.size() : 0));
+        
+        // Apply filters
+        if (payments != null && !payments.isEmpty()) {
+            List<Payment> filteredPayments = new ArrayList<>();
+            
+            for (Payment payment : payments) {
+                boolean matchesStatus = true;
+                boolean matchesDateRange = true;
+                
+                // Status filter
+                if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                    matchesStatus = statusFilter.equals(payment.getStatus());
+                    System.out.println("Payment " + payment.getPaymentId() + " status: " + payment.getStatus() + 
+                                     ", filter: " + statusFilter + ", matches: " + matchesStatus);
+                }
+                
+                // Date range filter
+                if (payment.getPaymentDate() != null) {
+                    if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                        try {
+                            java.sql.Date fromDate = java.sql.Date.valueOf(fromDateStr);
+                            java.util.Date paymentDate = new java.util.Date(payment.getPaymentDate().getTime());
+                            matchesDateRange = matchesDateRange && (paymentDate.equals(fromDate) || paymentDate.after(fromDate));
+                            System.out.println("Payment " + payment.getPaymentId() + " date: " + payment.getPaymentDate() + 
+                                             ", from: " + fromDate + ", matches from: " + matchesDateRange);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid fromDate format: " + fromDateStr);
+                        }
+                    }
+                    
+                    if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                        try {
+                            java.sql.Date toDate = java.sql.Date.valueOf(toDateStr);
+                            // Add one day to include the entire "to" date
+                            java.util.Calendar cal = java.util.Calendar.getInstance();
+                            cal.setTime(toDate);
+                            cal.add(java.util.Calendar.DAY_OF_MONTH, 1);
+                            java.util.Date toDatePlusOne = cal.getTime();
+                            
+                            java.util.Date paymentDate = new java.util.Date(payment.getPaymentDate().getTime());
+                            matchesDateRange = matchesDateRange && paymentDate.before(toDatePlusOne);
+                            System.out.println("Payment " + payment.getPaymentId() + " date: " + payment.getPaymentDate() + 
+                                             ", to: " + toDate + ", matches to: " + matchesDateRange);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid toDate format: " + toDateStr);
+                        }
+                    }
+                }
+                
+                // Add payment if it matches all filters
+                if (matchesStatus && matchesDateRange) {
+                    filteredPayments.add(payment);
+                }
+            }
+            
+            payments = filteredPayments;
+            System.out.println("Total payments after filter: " + payments.size());
+        }
+        System.out.println("=== End Payment Filter Debug ===");
         
         request.setAttribute("payments", payments);
         request.getRequestDispatcher("payments.jsp").forward(request, response);
