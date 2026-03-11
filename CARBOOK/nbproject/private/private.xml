@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/brand-edit.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/role-management.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/controller/RoleManagementServlet.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/model-add.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/brand-add.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/controller/CarCategoryServlet.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/category-add.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/model-list.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/dal/CarBrandDAO.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/dal/MaintenanceRecordDAO.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/dal/CarModelDAO.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/controller/CarModelServlet.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/category-list.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/controller/HomeServlet.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/model-edit.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/dal/CarCategoryDAO.java</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/category-edit.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/web/user-management.jsp</file>
+            <file>file:/D:/Fpt/SWPCARBOOK/CARBOOK/src/java/controller/CarBrandServlet.java</file>
+        </group>
+    </open-files>
+</project-private>

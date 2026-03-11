@@ -608,7 +608,7 @@ public void insertGoogleUser(User u) {
         stm.setString(2, u.getEmail());
         stm.setString(3, null);
         stm.setString(4, u.getFullName());
-        stm.setInt(5, 2);
+        stm.setInt(5, 3);
         stm.setBoolean(6, true);
         stm.setBoolean(7, true);
         stm.setString(8, u.getGoogleId());
@@ -618,6 +618,21 @@ public void insertGoogleUser(User u) {
     }
 }
 
+/**
+ * Cập nhật vai trò (RoleID) cho người dùng
+ */
+public boolean updateUserRole(int userId, int roleId) {
+    String sql = "UPDATE Users SET RoleID = ?, UpdatedAt = GETDATE() WHERE UserID = ?";
+    try {
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setInt(1, roleId);
+        stm.setInt(2, userId);
+        return stm.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.out.println("Update user role error: " + e.getMessage());
+        return false;
+    }
+}
  
 
 

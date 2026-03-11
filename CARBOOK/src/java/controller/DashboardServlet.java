@@ -32,10 +32,7 @@ public class DashboardServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
         
-        if (user == null) {
-            response.sendRedirect("login");
-            return;
-        }
+        
         
         // Load statistics based on role
         if (user.getRoleId() == 1) {

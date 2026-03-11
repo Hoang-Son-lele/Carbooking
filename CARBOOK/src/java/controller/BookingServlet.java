@@ -42,10 +42,7 @@ public class BookingServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
         
-        if (user == null) {
-            response.sendRedirect("login");
-            return;
-        }
+       
         
         String action = request.getParameter("action");
         

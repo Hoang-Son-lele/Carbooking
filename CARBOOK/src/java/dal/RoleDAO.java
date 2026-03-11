@@ -137,6 +137,41 @@ public class RoleDAO extends DBContext {
         }
         return false;
     }
+ public List<Role> searchByName(String name) {
+    List<Role> list = new ArrayList<>();
+    String sql = "SELECT * FROM Roles WHERE RoleName LIKE ?";
+
+    try {
+        PreparedStatement st = connection.prepareStatement(sql);
+        st.setString(1, "%" + name + "%");
+
+        ResultSet rs = st.executeQuery();
+
+        while (rs.next()) {
+            list.add(extractRoleFromResultSet(rs));
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error searching role: " + e.getMessage());
+    }
+
+    return list;
+}
+ 
+ public boolean checkRoleNameExists(String roleName) {
+    String sql = "SELECT * FROM Roles WHERE RoleName = ?";
+    try {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, roleName);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return true; // đã tồn tại
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false; // chưa tồn tại
+}
     
     /**
      * Extract Role object from ResultSet
